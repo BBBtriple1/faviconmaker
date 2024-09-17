@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(270deg, #ff7675, #74b9ff, #55efc4, #fd79a8);
+            background-size: 800% 800%;
+            animation: gradientBackground 10s ease infinite;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .pixelated-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: linear-gradient(45deg, #ff7675, #74b9ff, #55efc4, #fd79a8);
+            background-size: 400%;
+            animation: gradientShift 8s infinite ease-in-out;
+            image-rendering: pixelated;
+            filter: blur(2px);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .preview-container {
+            margin-bottom: 20px;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .upload-label:hover {
+            background-color: #2980b9;
+        }
+
+        .columns {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .column {
+            width: 30%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            display: none;
+            margin: 0 auto 10px;
+            border-radius: 4px;
+            background-color: #fff;
+            image-rendering: pixelated;
+        }
+
+        .download-link {
+            display: none;
+            text-align: center;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .download-link:hover {
+            color: #2980b9;
+        }
+
+        @keyframes pixelate {
+            0% {
+                filter: blur(5px);
+                transform: scale(1.2);
+            }
+            100% {
+                filter: blur(0);
+                transform: scale(1);
+            }
+        }
+
+        .show {
+            display: block;
+            animation: pixelate 0.5s ease forwards;
+        }
+
+        @media (max-width: 768px) {
+            .column {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pixelated-background"></div>
+
+    <div class="container">
+        <h1>Favicon Generator</h1>
+        <div class="preview-container">
+            <img id="imagePreview" src="" alt="Afbeelding Preview">
+        </div>
+        <label for="imageInput" class="upload-label">Upload Afbeelding</label>
+        <input type="file" id="imageInput" accept="image/*">
+        <button id="generateBtn" class="upload-label">Genereer Favicon</button>
+        
+        <div class="columns">
+            <div class="column">
+                <canvas id="canvas16" width="16" height="16"></canvas>
+                <a id="download16" class="download-link" download="favicon-16x16.png">Download 16x16</a>
+            </div>
+            <div class="column">
+                <canvas id="canvas32" width="32" height="32"></canvas>
+                <a id="download32" class="download-link" download="favicon-32x32.png">Download 32x32</a>
+            </div>
+            <div class="column">
+                <canvas id="canvas64" width="64" height="64"></canvas>
+                <a id="download64" class="download-link" download="favicon-64x64.png">Download 64x64</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('imageInput').addEventListener('change', updateImagePreview);
+        document.getElementById('generateBtn').addEventListener('click', generateFavicons);
+
+        function updateImagePreview() {
+            const file = document.getElementById('imageInput').files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                document.getElementById('imagePreview').src = reader.result;
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').src = "";
+            }
+        }
+
+        function generateFavicons() {
+            const imgInput = document.getElementById('imageInput').files[0];
+            if (!imgInput) {
+                alert("Upload een afbeelding om door te gaan.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    createFavicon(img, 16, document.getElementById('canvas16'), document.getElementById('download16'));
+                    createFavicon(img, 32, document.getElementById('canvas32'), document.getElementById('download32'));
+                    createFavicon(img, 64, document.getElementById('canvas64'), document.getElementById('download64'));
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(imgInput);
+        }
+
+        function createFavicon(image, size, canvas, downloadLink) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0, size, size);
+
+            const faviconDataUrl = canvas.toDataURL('image/png');
+            downloadLink.href = faviconDataUrl;
+
+            // Toon canvas en download link met animatie
+            canvas.classList.add('show');
+            downloadLink.classList.add('show');
+        }
+    </script>
+
+</body>
+</html>
+
